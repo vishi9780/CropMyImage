@@ -1,4 +1,4 @@
-package com.example.think360user.cropmyimage.animation;
+package com.example.cropmyimage2.animation;
 
 public interface SimpleValueAnimatorListener {
   void onAnimationStarted();

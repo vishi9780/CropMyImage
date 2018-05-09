@@ -1,9 +1,9 @@
-package com.example.think360user.cropmyimage;
+package com.example.cropmyimage2;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
 
-import com.example.think360user.cropmyimage.callback.SaveCallback;
+import com.example.cropmyimage2.callback.SaveCallback;
 
 public class SaveRequest {
 

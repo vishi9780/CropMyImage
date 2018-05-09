@@ -1,4 +1,4 @@
-package com.example.think360user.cropmyimage.util;
+package com.example.cropmyimage2.util;
 
 import android.annotation.TargetApi;
 import android.content.ContentResolver;

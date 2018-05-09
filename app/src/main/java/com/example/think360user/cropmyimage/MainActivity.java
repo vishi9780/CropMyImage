@@ -23,12 +23,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.example.think360user.cropmyimage.callback.CropCallback;
-import com.example.think360user.cropmyimage.callback.LoadCallback;
-import com.example.think360user.cropmyimage.callback.SaveCallback;
-import com.example.think360user.cropmyimage.util.Logger;
+
+import com.example.cropmyimage2.AppController;
+import com.example.cropmyimage2.CropImageView;
+import com.example.cropmyimage2.callback.CropCallback;
+import com.example.cropmyimage2.callback.LoadCallback;
+import com.example.cropmyimage2.callback.SaveCallback;
+import com.example.cropmyimage2.util.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +54,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     ImageButton iv_buttonDone,iv_buttonRotateRight,iv_buttonRotateLeft,iv_buttonclose;
     Button buttonShowCircleButCropAsSquare,buttonCircle,buttonFree,buttonCustom,button16_9,button9_16,button4_3
-    ,button3_4,button1_1,buttonFitImage,buttonPickImage;
+    ,button3_4,button1_1,buttonFitImage,buttonPickImage,btn_crop;
+    ImageView iv_isCrop;
+    LinearLayout ll_isCrop;
+    boolean isCrop=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,8 +73,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         iv_buttonclose=(ImageButton)findViewById(R.id.iv_buttonclose);
         iv_buttonRotateRight=(ImageButton)findViewById(R.id.iv_buttonRotateRight);
         iv_buttonDone=(ImageButton)findViewById(R.id.iv_buttonDone);
+        iv_isCrop=(ImageView)findViewById(R.id.iv_isCrop);
+        ll_isCrop=(LinearLayout)findViewById(R.id.ll_isCrop);
 
         buttonShowCircleButCropAsSquare=(Button) findViewById(R.id.buttonShowCircleButCropAsSquare);
+        btn_crop=(Button) findViewById(R.id.btn_crop);
         buttonCircle=(Button) findViewById(R.id.buttonCircle);
         buttonFree=(Button) findViewById(R.id.buttonFree);
         buttonCustom=(Button) findViewById(R.id.buttonCustom);
@@ -84,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 iv_buttonRotateLeft.setOnClickListener(this);
 
 
+                btn_crop.setOnClickListener(this);
                 buttonShowCircleButCropAsSquare.setOnClickListener(this);
                 buttonCircle.setOnClickListener(this);
                 buttonFree.setOnClickListener(this);
@@ -188,6 +199,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final LoadCallback mLoadCallback = new LoadCallback() {
         @Override public void onSuccess() {
             Log.e(TAG, "onSuccess:57>>"+"" );
+            if (isCrop){
+                mCropView.setCropMode(CropImageView.CropMode.SQUARE);
+                mCropView.crop(mSourceUri).execute(mCropCallback);
+                ll_isCrop.setVisibility(View.GONE);
+                iv_isCrop.setVisibility(View.VISIBLE);
+
+            }
 
         }
 
@@ -197,11 +215,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     };
     private final CropCallback mCropCallback = new CropCallback() {
         @Override public void onSuccess(Bitmap cropped) {
-
-            mCropView.save(cropped)
-                    .compressFormat(mCompressFormat)
-                    .execute(createSaveUri(), mSaveCallback);
-            //put api here after cropping the image is success
+                if (isCrop!=true) {
+                    mCropView.save(cropped)
+                            .compressFormat(mCompressFormat)
+                            .execute(createSaveUri(), mSaveCallback);
+                    //put api here after cropping the image is success
+                }else {
+                    ll_isCrop.setVisibility(View.GONE);
+                    iv_isCrop.setVisibility(View.VISIBLE);
+                    iv_isCrop.setImageBitmap(cropped);
+                    isCrop=false;
+                }
 
         }
 
@@ -298,6 +322,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.btn_crop:
+                isCrop=true;
+                break;
             case R.id.buttonPickImage:
                 alertDialog(MainActivity.this);
                 break;

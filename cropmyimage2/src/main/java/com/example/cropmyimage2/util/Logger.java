@@ -1,4 +1,4 @@
-package com.example.think360user.cropmyimage.util;
+package com.example.cropmyimage2.util;
 
 @SuppressWarnings("unused") public class Logger {
   private static final String TAG = "SimpleCropView";

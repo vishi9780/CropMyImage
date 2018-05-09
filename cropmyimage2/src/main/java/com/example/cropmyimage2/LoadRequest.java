@@ -1,9 +1,9 @@
-package com.example.think360user.cropmyimage;
+package com.example.cropmyimage2;
 
 import android.graphics.RectF;
 import android.net.Uri;
 
-import com.example.think360user.cropmyimage.callback.LoadCallback;
+import com.example.cropmyimage2.callback.LoadCallback;
 
 public class LoadRequest {
 

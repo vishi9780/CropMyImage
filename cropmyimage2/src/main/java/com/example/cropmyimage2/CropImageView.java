@@ -1,4 +1,4 @@
-package com.example.think360user.cropmyimage;
+package com.example.cropmyimage2;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -29,21 +29,20 @@ import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 
-import com.example.think360user.cropmyimage.animation.SimpleValueAnimator;
-import com.example.think360user.cropmyimage.animation.SimpleValueAnimatorListener;
-import com.example.think360user.cropmyimage.animation.ValueAnimatorV14;
-import com.example.think360user.cropmyimage.animation.ValueAnimatorV8;
-import com.example.think360user.cropmyimage.callback.Callback;
-import com.example.think360user.cropmyimage.callback.CropCallback;
-import com.example.think360user.cropmyimage.callback.LoadCallback;
-import com.example.think360user.cropmyimage.callback.SaveCallback;
-import com.example.think360user.cropmyimage.util.Logger;
-import com.example.think360user.cropmyimage.util.Utils;
+import com.example.cropmyimage2.animation.SimpleValueAnimator;
+import com.example.cropmyimage2.animation.SimpleValueAnimatorListener;
+import com.example.cropmyimage2.animation.ValueAnimatorV14;
+import com.example.cropmyimage2.animation.ValueAnimatorV8;
+import com.example.cropmyimage2.callback.Callback;
+import com.example.cropmyimage2.callback.CropCallback;
+import com.example.cropmyimage2.callback.LoadCallback;
+import com.example.cropmyimage2.callback.SaveCallback;
+import com.example.cropmyimage2.util.Logger;
+import com.example.cropmyimage2.util.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -1,4 +1,4 @@
-package com.example.think360user.cropmyimage.callback;
+package com.example.cropmyimage2.callback;
 
 public interface Callback {
   void onError(Throwable e);
