@@ -1,11 +1,13 @@
 package com.example.think360user.cropmyimage;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.net.ConnectivityManager;
@@ -33,11 +35,35 @@ import com.example.cropmyimage2.callback.CropCallback;
 import com.example.cropmyimage2.callback.LoadCallback;
 import com.example.cropmyimage2.callback.SaveCallback;
 import com.example.cropmyimage2.util.Logger;
+import com.google.gson.Gson;
 
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import audioengineer.com.cropimage1.CropImage;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Header;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.PartMap;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int CAMERA = 1;
@@ -58,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ImageView iv_isCrop;
     LinearLayout ll_isCrop;
     boolean isCrop=false;
+    File file_galleryimagepath;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void capureImage() {
-        final String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/Folder/";
+        /*final String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/Folder/";
         File newdir = new File(dir);
         newdir.mkdirs();
         String file = dir + DateFormat.format("yyyy-MM-dd_hhmmss", new Date()).toString() + ".jpg";
@@ -147,6 +174,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, mSourceUri);
 
+        startActivityForResult(cameraIntent, CAMERA);*/
+        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(cameraIntent, CAMERA);
     }
 
@@ -165,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case GALLERY:
                 if (null != data) {
                     mSourceUri = data.getData();
+                    getUpdateProfilePIc(getRealPathFromURI(mSourceUri));
                     try {
                         bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mSourceUri);
 
@@ -182,11 +212,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case CAMERA:
                 if (requestCode == CAMERA && resultCode == Activity.RESULT_OK) {
                     Log.e(TAG, "onActivityResult: "+mSourceUri );
-                    mCropView
+//                    bitmap = (Bitmap) data.getExtras().get("data");
+                    onCaptureImageResult(data);
+                   /* mCropView
                             .load(mSourceUri)
                             .initialFrameRect(mFrameRect)
                             .useThumbnail(true)
-                            .execute(mLoadCallback);
+                            .execute(mLoadCallback);*/
 
                 }
                 break;
@@ -327,6 +359,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.buttonPickImage:
                 alertDialog(MainActivity.this);
+
                 break;
             case R.id.iv_buttonDone:
                 //1:1
@@ -404,6 +437,114 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(getIntent());
                 overridePendingTransition( 0, 0);
                 break;
+        }
+    }
+    public interface Mine{
+        @Multipart
+        @POST("update_user_pic")
+        Call<Object> getTokenAccess(@PartMap Map<String, RequestBody> map, @Header("userAccesstoken") String myHeader);
+    }
+    public String getRealPathFromURI (Uri contentUri) {
+        String path = null;
+        String[] proj = { MediaStore.MediaColumns.DATA };
+        Cursor cursor = getContentResolver().query(contentUri, proj, null, null, null);
+        if (cursor.moveToFirst()) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+            path = cursor.getString(column_index);
+        }
+        cursor.close();
+        return path;
+    }
+    public void getUpdateProfilePIc(String s){
+         final ProgressDialog dialog = new ProgressDialog(this);;
+        dialog.setMessage("Doing something, please wait.");
+        dialog.show();
+        final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(40, TimeUnit.SECONDS)
+                .writeTimeout(40, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .build();
+
+        Retrofit retrofit=new Retrofit.Builder()
+                .client(okHttpClient)
+                .baseUrl("http://think360.in/iRestaurant/app/api/index.php/12345/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        File file = new File(s);
+                String convert_File_2String= String.valueOf(file);
+        String fileNAme=convert_File_2String.substring(convert_File_2String.lastIndexOf("/")+1);
+        RequestBody fbody = RequestBody.create(MediaType.parse("image/*"), file);
+
+        Map<String, RequestBody> map = new HashMap<>();
+        map.put("image\"; filename=\""+fileNAme+"\" ", fbody);
+
+        Mine serMine =retrofit.create(Mine.class);
+//        ApiInterface apiInterface = retrofit.create(ApiInterface.class);
+        Log.e("4569","map>>>"+map);
+        Call<Object> tokenResponseCall=serMine.getTokenAccess(map,"4ce8263f00a81d50451205d7d16d1eff");
+        tokenResponseCall.enqueue(new Callback<Object>() {
+            @Override
+            public void onResponse(Call<Object> call, Response<Object> response) {
+                try {
+                    if (dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
+
+                    if (response.isSuccessful()) {
+                        Log.e("Success", new Gson().toJson(response.body()));
+                        JSONObject jsonObject = new JSONObject(new Gson().toJson(response.body()));
+                    }
+                    else {
+                        Log.e("unSuccess", new Gson().toJson(response.errorBody()));
+                    }
+                }catch (Exception v){
+                    v.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Object> call, Throwable t) {
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+                Log.e(TAG, "onFailure:471"+call );
+                Log.e(TAG, "onFailure:471"+t.getMessage());
+            }
+        });
+    }
+    public void uploadIMageWihtGallery(File file_galleryimagepath){
+    }
+    private void onCaptureImageResult(Intent data) {
+        try
+        {
+            Bitmap bmp = null;
+            file_galleryimagepath =null;
+            bmp = (Bitmap) data.getExtras().get("data");
+            File f = new File(Environment.getExternalStorageDirectory(),System.currentTimeMillis() + ".jpg");
+            Log.e("TAG", "f::::::>>>> "+f );
+            if(f.exists())
+                f.delete();
+            f.createNewFile();
+            Bitmap bitmap = bmp;
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+            byte[] bitmapdata = bos.toByteArray();
+            FileOutputStream fos = new FileOutputStream(f);
+            fos.write(bitmapdata);
+            fos.flush();
+            fos.close();
+//            file_galleryimagepath =Compressor.getDefault(getActivity()).compressToFile(f);
+            file_galleryimagepath =f;
+            getUpdateProfilePIc(String.valueOf(file_galleryimagepath));
+
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
         }
     }
 }

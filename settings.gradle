@@ -1,1 +1,1 @@
-include ':app', ':cropmyimage2'
+include ':app', ':cropmyimage2', ':cropimage1'
